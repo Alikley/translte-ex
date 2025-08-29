@@ -16,7 +16,7 @@ export default defineConfig({
         entryFileNames: (chunk) => {
           if (chunk.name === "background") return "background/index.js";
           if (chunk.name === "content") return "content/index.js";
-          return "assets/[name]-[hash].js"; // بقیه فایل‌ها
+          return "assets/[name]-[hash].js";
         },
       },
     },

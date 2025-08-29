@@ -14,7 +14,7 @@
     "*://*.youtube.com/*"
   ],
 
- "background": {
+  "background": {
     "service_worker": "background/index.js",
     "type": "module"
   },
@@ -30,6 +30,4 @@
     "default_popup": "popup/index.html",
     "default_title": "YouTube Farsi Subtitle"
   }
-
-  
 }
