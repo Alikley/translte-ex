@@ -18,12 +18,14 @@ export default defineConfig({
           if (chunk.name === "content") return "content/index.js";
           return "assets/[name]-[hash].js";
         },
+        assetFileNames: (assetInfo) => {
+          // برای HTML
+          if (assetInfo.name === "index.html") {
+            return "popup/index.html"; // بجای src/popup/index.html → popup/index.html
+          }
+          return "assets/[name]-[hash][extname]";
+        },
       },
-    },
-  },
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "src"),
     },
   },
 });
