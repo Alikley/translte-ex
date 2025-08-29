@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "scripts": {
+      "build:popup": "vite build --config vite.config.popup.ts",
+      "build:background": "vite build --config vite.config.background.ts",
+      "build:content": "vite build --config vite.config.content.ts",
+      "build": "npm run build:popup && npm run build:background && npm run build:content"
+    }
     "lint": "eslint .",
     "preview": "vite preview"
   },
