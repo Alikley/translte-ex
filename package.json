@@ -10,7 +10,7 @@
       "build:background": "vite build --config vite.config.background.ts",
       "build:content": "vite build --config vite.config.content.ts",
       "build": "npm run build:popup && npm run build:background && npm run build:content"
-    }
+    },
     "lint": "eslint .",
     "preview": "vite preview"
   },
