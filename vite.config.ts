@@ -6,22 +6,24 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: "dist",
-    emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, "public/index.html"),
-        content: resolve(__dirname, "src/content/index.tsx"),
+        popup: resolve(__dirname, "src/popup/index.html"),
         background: resolve(__dirname, "src/background/index.ts"),
+        content: resolve(__dirname, "src/content/index.ts"),
       },
       output: {
         entryFileNames: (chunk) => {
           if (chunk.name === "background") return "background/index.js";
           if (chunk.name === "content") return "content/index.js";
-          return "[name].js";
+          return "assets/[name]-[hash].js"; // بقیه فایل‌ها
         },
-        chunkFileNames: "chunks/[name]-[hash].js",
-        assetFileNames: "assets/[name]-[hash][extname]"
-      }
-    }
-  }
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "src"),
+    },
+  },
 });
