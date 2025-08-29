@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Live Subtitles",
+  "version": "0.1",
+  "permissions": ["tabs", "activeTab", "scripting"],
+ "background": {
+  "service_worker": "backgro  und/index.js",
+  "type": {
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": "./src",
+    "typeRoots": ["./src/types", "./node_modules/@types"]
+  }
+}
+},
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content/index.js"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "index.html"
+  }
+}
