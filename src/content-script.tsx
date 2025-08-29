@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import App from "./popup/App";
 
 // تزریق کامپوننت React به صفحه یوتیوب
 const root = document.createElement("div");

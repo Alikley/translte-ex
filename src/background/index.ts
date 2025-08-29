@@ -1,20 +1,27 @@
 import { MessageType } from "../types";
 
+let popupPorts: chrome.runtime.Port[] = [];
+
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name !== "audio-stream") return;
+  if (port.name === "popup-logger") {
+    popupPorts.push(port);
 
-  port.onMessage.addListener((msg) => {
-    if (
-      msg.type === MessageType.AUDIO_CHUNK &&
-      msg.data instanceof ArrayBuffer
-    ) {
-      // بازسازی Int16Array از ArrayBuffer
-      const pcmData = new Int16Array(msg.data);
+    port.onDisconnect.addListener(() => {
+      popupPorts = popupPorts.filter((p) => p !== port);
+    });
+  }
 
-      console.log("🎧 Received chunk:", pcmData.length, "samples");
-      console.log("📊 Sample rate:", msg.sampleRate);
+  if (port.name === "audio-stream") {
+    port.onMessage.addListener((msg) => {
+      if (msg.type === MessageType.AUDIO_CHUNK) {
+        // لاگ صدا
+        console.log("🎧 Audio chunk received:", msg.data.length);
 
-      // 👉 اینجا می‌تونی pcmData رو استریم کنی به STT API (مرحله بعدی)
-    }
-  });
+        // ارسال به popup ها
+        for (const p of popupPorts) {
+          p.postMessage(msg);
+        }
+      }
+    });
+  }
 });
