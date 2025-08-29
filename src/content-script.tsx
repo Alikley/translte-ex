@@ -1,11 +1,14 @@
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import App from "./App";
 
 // تزریق کامپوننت React به صفحه یوتیوب
 const root = document.createElement("div");
 root.id = "farsi-subtitle-root";
 document.body.appendChild(root);
-ReactDOM.render(<App />, root);
+
+// ایجاد ریشه و رندر کردن
+const rootElement = createRoot(root);
+rootElement.render(<App />);
 
 // تزریق فایل صوتی
 const script = document.createElement("script");
