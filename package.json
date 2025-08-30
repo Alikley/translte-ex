@@ -3,19 +3,22 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-   "scripts": {
-      "dev": "vite",
-      "lint": "eslint .",
-      "preview": "vite preview",
-      "build:popup": "vite build --config vite.config.popup.ts",
-      "build:background": "vite build --config vite.config.background.ts",
-      "build:content": "vite build --config vite.config.content.ts",
-      "build": "npm run build:popup && npm run build:background && npm run build:content"
-    },
+  "scripts": {
+    "dev": "vite",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "build:popup": "vite build --config vite.config.popup.ts",
+    "build:background": "vite build --config vite.config.background.ts",
+    "build:content": "vite build --config vite.config.content.ts",
+    "build": "npm run build:popup && npm run build:background && npm run build:content"
+  },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "axios": "^1.11.0",
+    "child_process": "^1.0.2",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "webextension-polyfill-ts": "^0.26.0"

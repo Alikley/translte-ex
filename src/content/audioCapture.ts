@@ -64,12 +64,12 @@ export function captureYouTubeAudio() {
         const pcm16 = float32ToInt16(c);
 
         // راه حل جایگزین: ارسال داده به صورت آرایه معمولی بدون انتقال
-        const dataArray = Array.from(pcm16);
+        // const dataArray = Array.from(pcm16);
 
         try {
           p.postMessage({
             type: MessageType.AUDIO_CHUNK,
-            data: dataArray,
+            data: pcm16.buffer, // ⬅️ به جای Array
             sampleRate: audioCtx.sampleRate,
           });
         } catch (error) {

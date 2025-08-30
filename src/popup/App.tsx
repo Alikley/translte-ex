@@ -4,25 +4,26 @@ import { MessageType } from "../types";
 function App() {
   const [status, setStatus] = useState<"idle" | "capturing">("idle");
   const [lastChunk, setLastChunk] = useState<string>("No data yet");
-
+  const [transcript, setTranscript] = useState<string>("");
   useEffect(() => {
     // اتصال به background
     const port = chrome.runtime.connect({ name: "popup-logger" });
 
-    // دریافت پیام‌ها از background
     port.onMessage.addListener((msg) => {
       if (msg.type === MessageType.STATUS) {
         setStatus(msg.status);
       }
       if (msg.type === MessageType.AUDIO_CHUNK) {
-        setLastChunk(`Samples: ${msg.data.length}, Rate: ${msg.sampleRate}`);
+        setLastChunk(
+          `Samples: ${msg.data.byteLength}, Rate: ${msg.sampleRate}`
+        );
+      }
+      if (msg.type === "TRANSCRIPT") {
+        setTranscript((prev) => prev + " " + msg.data);
       }
     });
 
-    // تمیزکاری هنگام بستن popup
-    return () => {
-      port.disconnect();
-    };
+    return () => port.disconnect();
   }, []);
 
   return (
@@ -44,6 +45,10 @@ function App() {
         <b>Last Audio Chunk:</b>
         <br />
         {lastChunk}
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <b>Transcript:</b>
+        <p style={{ whiteSpace: "pre-wrap" }}>{transcript}</p>
       </div>
     </div>
   );
