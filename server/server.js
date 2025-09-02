@@ -3,10 +3,10 @@ import multer from "multer";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-
+import cors from "cors";
 const app = express();
 const upload = multer({ dest: "uploads/" });
-
+app.use(cors());
 // مسیر باینری whisper.cpp (نسخه جدید: whisper-cli.exe)
 const WHISPER_PATH = path.resolve(
   "../whisper.cpp/build/bin/Release/whisper-cli.exe"
