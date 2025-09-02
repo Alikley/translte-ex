@@ -34,7 +34,7 @@ chrome.runtime.onConnect.addListener((port) => {
             "chunk.wav"
           );
 
-          const res = await fetch("http://127.0.0.1:3000/stt", {
+          const res = await fetch("http://localhost:3000/stt", {
             method: "POST",
             body: formData,
           });
