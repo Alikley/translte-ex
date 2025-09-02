@@ -3,12 +3,18 @@ import multer from "multer";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
+import cors from "cors";
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-const WHISPER_PATH = path.resolve("./whisper.cpp/main"); // مسیر باینری whisper.cpp
-const MODEL_PATH = path.resolve("./models/ggml-base.en.bin"); // مدل whisper
+// ✅ فعال کردن CORS برای هر شرایطی (حتی VPN / Proxy)
+app.use(cors());
+
+// مسیر باینری whisper.cpp
+const WHISPER_PATH = path.resolve("./whisper.cpp/build/bin/Release/main.exe");
+// مدل whisper
+const MODEL_PATH = path.resolve("./models/ggml-base.en.bin");
 
 app.post("/stt", upload.single("audio"), (req, res) => {
   if (!req.file) {
@@ -55,6 +61,7 @@ app.post("/stt", upload.single("audio"), (req, res) => {
   });
 });
 
-app.listen(3000, () => {
+// ✅ گوش دادن روی همه‌ی اینترفیس‌ها (VPN مشکلی ایجاد نمی‌کنه)
+app.listen(3000, "0.0.0.0", () => {
   console.log("🚀 Whisper server running at http://localhost:3000/stt");
 });
