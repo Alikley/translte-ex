@@ -23,13 +23,13 @@ function ensurePort() {
   return port!;
 }
 
-export async function captureYouTubeAudio() {
+export function captureYouTubeAudio() {
   if (started) return;
   started = true;
 
   const video = document.querySelector("video");
   if (!video) {
-    log.warn("ویدیویی یافت نشد. مجدداً تلاش می‌کنم...");
+    log.warn("ویدیویی یافت نشد. دوباره تلاش می‌کنم...");
     started = false;
     setTimeout(captureYouTubeAudio, 1500);
     return;
@@ -37,35 +37,41 @@ export async function captureYouTubeAudio() {
 
   try {
     const audioCtx = new AudioContext();
-
-    // ⬅️ AudioWorklet بارگذاری
-    await audioCtx.audioWorklet.addModule(
-      chrome.runtime.getURL("utils/audio-processor.js")
-    );
-
     const source = audioCtx.createMediaElementSource(video);
 
-    // ساخت AudioWorkletNode
-    const workletNode = new AudioWorkletNode(audioCtx, "audio-processor");
+    // گین برای کنترل صدا
+    const gain = audioCtx.createGain();
+    gain.gain.value = 1;
+    source.connect(gain).connect(audioCtx.destination);
 
-    source.connect(workletNode).connect(audioCtx.destination);
+    // ScriptProcessorNode (روش قدیمی ولی ساده)
+    const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+    source.connect(processor);
+
+    // سینک برای جلوگیری از دوبار شنیده شدن صدا
+    const sink = audioCtx.createGain();
+    sink.gain.value = 0;
+    processor.connect(sink).connect(audioCtx.destination);
+
+    // برای resume کردن audioCtx وقتی ساسپند شد
+    const resume = () => audioCtx.state === "suspended" && audioCtx.resume();
+    video.addEventListener("play", resume);
 
     const p = ensurePort();
 
-    // وقتی داده جدید میاد
-    workletNode.port.onmessage = (event) => {
-      const f32 = event.data as Float32Array;
+    processor.onaudioprocess = (event) => {
+      if (!portConnected) return;
 
-      if (!f32 || f32.length === 0) return;
-
+      const f32 = event.inputBuffer.getChannelData(0);
       const chunks = chunkFloat32Array(f32, 1024);
+
       for (const c of chunks) {
         const pcm16 = float32ToInt16(c);
 
         try {
           p.postMessage({
             type: MessageType.AUDIO_CHUNK,
-            data: Array.from(pcm16), // ارسال ایمن
+            data: pcm16.buffer, // ارسال به صورت ArrayBuffer
             sampleRate: audioCtx.sampleRate,
           });
         } catch (error) {
@@ -76,7 +82,7 @@ export async function captureYouTubeAudio() {
       }
     };
 
-    log.info("🎤 ضبط صدا با AudioWorklet شروع شد");
+    log.info("🎤 ضبط صدا شروع شد (ScriptProcessorNode)");
   } catch (error) {
     log.error("خطا در راه‌اندازی ضبط صدا:", error);
     started = false;

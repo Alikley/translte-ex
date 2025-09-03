@@ -1,6 +1,6 @@
 import { MessageType } from "../types";
 import { encodeWav } from "../utils/wavEncoder"; // ⬅️ از util
-import fs from "fs";
+// import fs from "fs";
 
 let popupPorts: chrome.runtime.Port[] = [];
 let audioBuffer: Int16Array[] = [];
