@@ -6,7 +6,7 @@ const log = new Logger("AudioCapture");
 
 let started = false;
 let port: chrome.runtime.Port | null = null;
-let portConnected = false; // اضافه کردن متغیر برای پیگیری وضعیت اتصال
+let portConnected = false;
 
 function ensurePort() {
   if (!port) {
@@ -23,7 +23,7 @@ function ensurePort() {
   return port!;
 }
 
-export function captureYouTubeAudio() {
+export async function captureYouTubeAudio() {
   if (started) return;
   started = true;
 
@@ -37,39 +37,35 @@ export function captureYouTubeAudio() {
 
   try {
     const audioCtx = new AudioContext();
+
+    // ⬅️ AudioWorklet بارگذاری
+    await audioCtx.audioWorklet.addModule(
+      chrome.runtime.getURL("utils/audio-processor.js")
+    );
+
     const source = audioCtx.createMediaElementSource(video);
-    const gain = audioCtx.createGain();
-    gain.gain.value = 1;
-    source.connect(gain).connect(audioCtx.destination);
 
-    const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-    source.connect(processor);
+    // ساخت AudioWorkletNode
+    const workletNode = new AudioWorkletNode(audioCtx, "audio-processor");
 
-    const sink = audioCtx.createGain();
-    sink.gain.value = 0;
-    processor.connect(sink).connect(audioCtx.destination);
-
-    const resume = () => audioCtx.state === "suspended" && audioCtx.resume();
-    video.addEventListener("play", resume);
+    source.connect(workletNode).connect(audioCtx.destination);
 
     const p = ensurePort();
 
-    processor.onaudioprocess = (event) => {
-      if (!portConnected) return; // استفاده از متغیر portConnected به جای port.connected
+    // وقتی داده جدید میاد
+    workletNode.port.onmessage = (event) => {
+      const f32 = event.data as Float32Array;
 
-      const f32 = event.inputBuffer.getChannelData(0);
+      if (!f32 || f32.length === 0) return;
+
       const chunks = chunkFloat32Array(f32, 1024);
-
       for (const c of chunks) {
         const pcm16 = float32ToInt16(c);
-
-        // راه حل جایگزین: ارسال داده به صورت آرایه معمولی بدون انتقال
-        // const dataArray = Array.from(pcm16);
 
         try {
           p.postMessage({
             type: MessageType.AUDIO_CHUNK,
-            data: pcm16.buffer, // ⬅️ به جای Array
+            data: Array.from(pcm16), // ارسال ایمن
             sampleRate: audioCtx.sampleRate,
           });
         } catch (error) {
@@ -80,7 +76,7 @@ export function captureYouTubeAudio() {
       }
     };
 
-    log.info("ضبط صدا شروع شد");
+    log.info("🎤 ضبط صدا با AudioWorklet شروع شد");
   } catch (error) {
     log.error("خطا در راه‌اندازی ضبط صدا:", error);
     started = false;

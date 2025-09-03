@@ -1,10 +1,10 @@
 // 🔹 تعریف نوع معتبر برای پیام‌ها
-export type MessageType = "AUDIO_CHUNK" | "STATUS";
+export type MessageType = "AUDIO_CHUNK" | "STATUS" | "TRANSCRIPT";
 
-// 🔹 آبجکت برای استفاده راحت‌تر (مثل enum)
 export const MessageType = {
   AUDIO_CHUNK: "AUDIO_CHUNK" as MessageType,
   STATUS: "STATUS" as MessageType,
+  TRANSCRIPT: "TRANSCRIPT" as MessageType,
 };
 
 // 🔹 پیام عمومی

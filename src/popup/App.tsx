@@ -25,6 +25,23 @@ function App() {
 
     return () => port.disconnect();
   }, []);
+  useEffect(() => {
+    const port = chrome.runtime.connect({ name: "popup-logger" });
+
+    port.onMessage.addListener((msg) => {
+      if (msg.type === MessageType.STATUS) {
+        setStatus(msg.status);
+      }
+      if (msg.type === MessageType.AUDIO_CHUNK) {
+        setLastChunk(`Samples: ${msg.data.length}, Rate: ${msg.sampleRate}`);
+      }
+      if (msg.type === MessageType.TRANSCRIPT) {
+        setTranscript(msg.text);
+      }
+    });
+
+    return () => port.disconnect();
+  }, []);
 
   return (
     <div style={{ width: 250, padding: 12, fontFamily: "sans-serif" }}>
@@ -46,9 +63,9 @@ function App() {
         <br />
         {lastChunk}
       </div>
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 10 }}>
         <b>Transcript:</b>
-        <p style={{ whiteSpace: "pre-wrap" }}>{transcript}</p>
+        <p>{transcript || "⏳ در حال پردازش ..."}</p>
       </div>
     </div>
   );
