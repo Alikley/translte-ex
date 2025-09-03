@@ -1,8 +1,8 @@
 import { MessageType } from "../types";
+import { encodeWav } from "../utils/wavEncoder"; // 🔹 اضافه کن
 
 let popupPorts: chrome.runtime.Port[] = [];
 
-// اتصال popup
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "popup-logger") {
     popupPorts.push(port);
@@ -12,21 +12,24 @@ chrome.runtime.onConnect.addListener((port) => {
     });
   }
 
-  // اتصال استریم صدا
   if (port.name === "audio-stream") {
     port.onMessage.addListener((msg) => {
       if (msg.type === MessageType.AUDIO_CHUNK) {
         console.log("🎧 Audio chunk received:", msg.data?.byteLength);
 
-        // آماده کردن داده برای ارسال به سرور Whisper
+        // تبدیل ArrayBuffer خام به Int16Array
+        const int16 = new Int16Array(msg.data);
+
+        // ساختن WAV درست با نرخ نمونه‌برداری صحیح
+        const wavBuffer = encodeWav(int16, msg.sampleRate);
+
         const formData = new FormData();
         formData.append(
           "audio",
-          new Blob([msg.data], { type: "audio/wav" }),
+          new Blob([wavBuffer], { type: "audio/wav" }),
           "chunk.wav"
         );
 
-        // ارسال به سرور STT
         fetch("http://localhost:3000/stt", {
           method: "POST",
           body: formData,
@@ -35,7 +38,6 @@ chrome.runtime.onConnect.addListener((port) => {
           .then((data) => {
             console.log("📝 Whisper text:", data.text);
 
-            // ارسال متن به popup ها
             for (const p of popupPorts) {
               p.postMessage({
                 type: MessageType.TRANSCRIPT,
